@@ -153,6 +153,14 @@ Open your browser at **http://127.0.0.1:5000** 🎉
 
 ---
 
+UI Image:
+
+<img width="1600" height="803" alt="image" src="https://github.com/user-attachments/assets/976a0bd9-51ba-407c-a387-8b6305d75787" />
+
+<img width="1600" height="811" alt="image" src="https://github.com/user-attachments/assets/b247c414-023c-45d1-a3bc-8bff7fb2d116" />
+
+
+
 ## 🎓 Key Concepts Learned
 
 🔌 API Integration        Using an official SDK to connect to a frontier LLM
@@ -193,6 +201,6 @@ Open your browser at **http://127.0.0.1:5000** 🎉
 
 <div align="center">
 
-Built with 💚 using **Python · Flask · Groq · Llama 3.3**
+Built with 💚 By ABIRAMI using **Python · Flask · Groq · Llama 3.3**
 
 </div>
