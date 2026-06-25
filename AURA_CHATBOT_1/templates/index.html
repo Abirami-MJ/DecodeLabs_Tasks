@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura — AI Chatbot</title>
+<style>
+  /* ── Theme tokens ── */
+  [data-theme="dark"] {
+    --bg: #0b0f0d;
+    --panel: #111714;
+    --border: #1e2822;
+    --accent: #3ddc84;
+    --accent2: #f2b35c;
+    --text: #d8e3da;
+    --muted: #5a6b60;
+    --user-bubble: #162219;
+    --bot-bubble: #0f1a14;
+    --input-bg: #0e1410;
+    --shadow: rgba(0,0,0,0.4);
+  }
+  [data-theme="light"] {
+    --bg: #f0f4f1;
+    --panel: #ffffff;
+    --border: #dde8e0;
+    --accent: #1f8c4e;
+    --accent2: #c97a1a;
+    --text: #1a2b1f;
+    --muted: #7a9283;
+    --user-bubble: #e2f0e7;
+    --bot-bubble: #f5faf6;
+    --input-bg: #f8fbf9;
+    --shadow: rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+  .brand-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Persona selector ── */
+  .persona-bar {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .persona-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .persona-btn:hover,
+  .persona-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06140c;
+    font-weight: 600;
+  }
+
+  /* ── Chat panel ── */
+  .chat-panel {
+    width: 100%;
+    max-width: 700px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Message log ── */
+  #log {
+    height: 58vh;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  #log::-webkit-scrollbar { width: 4px; }
+  #log::-webkit-scrollbar-track { background: transparent; }
+  #log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── Message bubbles ── */
+  .message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    animation: fadeUp 0.25s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .message.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .avatar.bot-av { background: #162a1e; }
+  .avatar.user-av { background: #1a2040; }
+
+  .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; gap: 4px; }
+  .message.user .bubble-wrap { align-items: flex-end; }
+
+  .bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.6;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .message.bot .bubble {
+    background: var(--bot-bubble);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+  .message.user .bubble {
+    background: var(--user-bubble);
+    border: 1px solid var(--border);
+    border-top-right-radius: 4px;
+  }
+
+  .bubble-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .timestamp {
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .copy-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: none;
+  }
+  .message.bot:hover .copy-btn { display: inline-block; }
+  .copy-btn:hover { background: var(--border); color: var(--accent); }
+
+  /* ── Typing indicator ── */
+  .typing-indicator {
+    display: none;
+    gap: 10px;
+    align-items: center;
+  }
+  .typing-indicator.visible { display: flex; }
+  .dots {
+    display: flex; gap: 4px;
+    background: var(--bot-bubble);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 14px;
+    border-top-left-radius: 4px;
+  }
+  .dots span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: blink 1.2s infinite;
+  }
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Footer bar ── */
+  .footer-bar {
+    border-top: 1px solid var(--border);
+    padding: 8px 12px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Input row ── */
+  .input-row {
+    display: flex;
+    border-top: 1px solid var(--border);
+    background: var(--input-bg);
+  }
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 14px 16px;
+    outline: none;
+    resize: none;
+    height: 50px;
+    line-height: 1.5;
+  }
+  .send-btn {
+    background: var(--accent);
+    border: none;
+    color: #06140c;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 0 22px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .send-btn:hover { opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div>
+      <div class="brand-name">AURA</div>
+      <div class="brand-sub">AI Chatbot · Memory Active</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="theme-btn">☀ Light</button>
+    <button class="icon-btn" id="export-btn">↓ Export</button>
+    <button class="icon-btn" id="clear-btn">✕ Clear</button>
+  </div>
+</div>
+
+<!-- ── Persona selector ── -->
+<div class="persona-bar">
+  <button class="persona-btn active" data-persona="assistant">🤝 Assistant</button>
+  <button class="persona-btn" data-persona="coder">💻 Code Helper</button>
+  <button class="persona-btn" data-persona="tutor">🎓 Sarcastic Tutor</button>
+  <button class="persona-btn" data-persona="writer">✍ Creative Writer</button>
+</div>
+
+<!-- ── Chat panel ── -->
+<div class="chat-panel">
+  <div id="log">
+    <!-- Intro message from bot -->
+    <div class="message bot" id="intro-msg">
+      <div class="avatar bot-av">🤖</div>
+      <div class="bubble-wrap">
+        <div class="bubble">Hi! I'm <strong>Aura</strong>, your AI assistant 👋<br>I remember everything you tell me during our conversation. Try switching my personality using the buttons above, or just start chatting!</div>
+        <div class="bubble-meta">
+          <span class="timestamp" id="intro-time"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing indicator lives inside the log -->
+    <div class="message bot typing-indicator" id="typing">
+      <div class="avatar bot-av">🤖</div>
+      <div class="dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <span id="msg-count">0 messages in memory</span>
+    <span>Enter to send · Shift+Enter for new line</span>
+  </div>
+
+  <div class="input-row">
+    <textarea id="msg" placeholder="Type a message..." rows="1"></textarea>
+    <button class="send-btn" id="send-btn">Send</button>
+  </div>
+</div>
+
+<script>
+  const log       = document.getElementById('log');
+  const input     = document.getElementById('msg');
+  const sendBtn   = document.getElementById('send-btn');
+  const typing    = document.getElementById('typing');
+  const msgCount  = document.getElementById('msg-count');
+
+  // ── Timestamp helper ──
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  document.getElementById('intro-time').textContent = getTime();
+
+  // ── Add message bubble ──
+  function addMessage(role, text) {
+    const isBot = role === 'bot';
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+
+    const copyBtn = isBot
+      ? `<button class="copy-btn" onclick="copyText(this, \`${text.replace(/`/g, '\\`')}\`)">copy</button>`
+      : '';
+
+    div.innerHTML = `
+      <div class="avatar ${isBot ? 'bot-av' : 'user-av'}">${isBot ? '🤖' : '🧑'}</div>
+      <div class="bubble-wrap">
+        <div class="bubble">${text}</div>
+        <div class="bubble-meta">
+          <span class="timestamp">${getTime()}</span>
+          ${copyBtn}
+        </div>
+      </div>`;
+
+    // Insert before the typing indicator so it stays at the bottom
+    log.insertBefore(div, typing);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ── Copy button ──
+  function copyText(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+
+  // ── Send message ──
+  async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage('user', message);
+    input.value = '';
+    input.style.height = '50px';
+    sendBtn.disabled = true;
+
+    // Show typing indicator
+    typing.classList.add('visible');
+    log.scrollTop = log.scrollHeight;
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+
+      typing.classList.remove('visible');
+
+      if (data.error) {
+        addMessage('bot', `⚠ Error: ${data.error}`);
+      } else {
+        addMessage('bot', data.reply);
+        const trimNote = data.is_trimmed ? ' · oldest messages dropped' : '';
+    msgCount.textContent = `${data.message_count} messages in memory${trimNote}`;
+      }
+    } catch (err) {
+      typing.classList.remove('visible');
+      addMessage('bot', '⚠ Network error. Check your connection.');
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  // ── Enter to send, Shift+Enter for newline ──
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  sendBtn.addEventListener('click', sendMessage);
+
+  // ── Auto-resize textarea ──
+  input.addEventListener('input', () => {
+    input.style.height = '50px';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+
+  // ── Persona selector ──
+  document.querySelectorAll('.persona-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const persona = btn.dataset.persona;
+      await fetch('/set_persona', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ persona })
+      });
+      document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Clear the chat log visually and show a fresh intro
+      log.innerHTML = `
+        <div class="message bot">
+          <div class="avatar bot-av">🤖</div>
+          <div class="bubble-wrap">
+            <div class="bubble">Persona switched! I've cleared our conversation and I'm ready to start fresh as <strong>${btn.textContent.trim()}</strong>.</div>
+            <div class="bubble-meta"><span class="timestamp">${getTime()}</span></div>
+          </div>
+        </div>
+        <div class="message bot typing-indicator" id="typing">
+          <div class="avatar bot-av">🤖</div>
+          <div class="dots"><span></span><span></span><span></span></div>
+        </div>`;
+      msgCount.textContent = '0 messages in memory';
+    });
+  });
+
+  // ── Clear chat ──
+  document.getElementById('clear-btn').addEventListener('click', async () => {
+    await fetch('/clear', { method: 'POST' });
+    log.innerHTML = `
+      <div class="message bot">
+        <div class="avatar bot-av">🤖</div>
+        <div class="bubble-wrap">
+          <div class="bubble">Chat cleared! Fresh start — what's on your mind?</div>
+          <div class="bubble-meta"><span class="timestamp">${getTime()}</span></div>
+        </div>
+      </div>
+      <div class="message bot typing-indicator" id="typing">
+        <div class="avatar bot-av">🤖</div>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>`;
+    msgCount.textContent = '0 messages in memory';
+  });
+
+  // ── Dark / Light toggle ──
+  const themeBtn = document.getElementById('theme-btn');
+  themeBtn.addEventListener('click', () => {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeBtn.textContent = isDark ? '🌙 Dark' : '☀ Light';
+  });
+
+  // ── Export chat ──
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const lines = [];
+    document.querySelectorAll('.message').forEach(msg => {
+      if (msg.classList.contains('typing-indicator')) return;
+      const who = msg.classList.contains('user') ? 'You' : 'Aura';
+      const text = msg.querySelector('.bubble')?.textContent?.trim();
+      const time = msg.querySelector('.timestamp')?.textContent?.trim();
+      if (text) lines.push(`[${time}] ${who}: ${text}`);
+    });
+    const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `aura-chat-${Date.now()}.txt`;
+    a.click();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Secret keys — NEVER commit these
+.env
+
+# Python cache files — generated automatically, not part of your code
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment folder if you create one later
+venv/
+env/
+.venv/
+
+# VS Code settings
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log

@@ -1,0 +1,36 @@
+# ── API KEYS & SECRETS ───────────────────────────────────────
+config.py
+.env
+*.env
+
+# ── PYTHON CACHE ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── VIRTUAL ENVIRONMENT ──────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+
+# ── STREAMLIT ────────────────────────────────────────────────
+.streamlit/
+
+# ── OS FILES ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── EDITOR FILES ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── LOGS & TEMP ──────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
