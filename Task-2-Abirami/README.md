@@ -131,6 +131,16 @@ py -3.14 copyflow.py
 
 ---
 
+UI Image:
+
+<img width="1433" height="818" alt="image" src="https://github.com/user-attachments/assets/aaf51788-181c-402b-8d2a-b5e7ad4cd1a6" />
+
+<img width="1146" height="836" alt="image" src="https://github.com/user-attachments/assets/a92c29d4-70d1-4f8a-bbf1-558baedfe4c4" />
+
+<img width="1127" height="842" alt="image" src="https://github.com/user-attachments/assets/345e9d57-629c-4d05-90c0-b0400a34d7d8" />
+
+
+
 ## 📝 Key Concepts I Used In This Project
 
 - **Dynamic Prompt Templates** — Injecting variables into prompts
